@@ -1,3 +1,5 @@
+import matplotlib as plt
+
 def plot_spectrum(spectrum, ax=None, logx=False, logy=False, vmax=None, 
                   cmap='viridis', label=None):
     """Plot spectra with commonly used matplotlib options. Expects 
