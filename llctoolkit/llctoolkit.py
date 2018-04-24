@@ -1,4 +1,7 @@
 import matplotlib as plt
+import numpy as np
+import re
+import traceback
 
 def plot_spectrum(spectrum, ax=None, logx=False, logy=False, vmax=None, 
                   cmap='viridis', label=None):
@@ -21,17 +24,16 @@ def plot_spectrum(spectrum, ax=None, logx=False, logy=False, vmax=None,
     spectrum.sel(freq_x_km=slice(0,None)).plot(ax=ax, label=label, 
                                                cmap=plt.cm.get_cmap(cmap), 
                                                vmax=vmax)
-    
     if (logx == True):
         ax.set_xscale('log')
     if (logy == True):
         ax.set_yscale('log')
+
     stack = traceback.extract_stack()
     filename, lineno, function_name, code = stack[-2]
-    #vars_name = re.compile(r'\((.*?)\).*$').search(code).groups()[0]
-    
-    ax.xaxis.set_major_formatter(mtick.FuncFormatter(plotAxFormatter))
+    vars_name = re.compile(r'\((.*?)\).*$').search(code).groups()[0]
     plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
     return ax
 
 def d2k_tangent_plane(da, lon0=None): 

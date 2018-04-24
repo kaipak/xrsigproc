@@ -8,12 +8,16 @@ setup(
     description = 'Tools for analysis of LLC4320 datasets using Python scientific libraries.',
     download_url = 'https://github.com/kaipak/llctoolkit.git/tarball/0.1/',
     install_requires =[
+        'astropy',
         'matplotlib',
         'numpy',
+        're',
+        'scipy',
+        'traceback',
     ],
     keywords = ['FFT', 'fourier transform', 'tangent plane', 'plotting'], 
     license = 'MIT',
-    packages = ['llcpak'], # this must be the same as the name above
-    version = '0.1.1',
-    url = 'https://github.com/kaipak/llcpak.git',
+    packages = ['llctoolkit'], # this must be the same as the name above
+    version = '0.1.2',
+    url = 'https://github.com/kaipak/llctoolkit.git',
 )
