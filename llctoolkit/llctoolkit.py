@@ -1,7 +1,9 @@
-import matplotlib as plt
+from matplotlib import pyplot as plt
 import numpy as np
 import re
 import traceback
+
+__all__ = ["plot_spectrum", "d2k_tangent_plane"]
 
 def plot_spectrum(spectrum, ax=None, logx=False, logy=False, vmax=None, 
                   cmap='viridis', label=None):
@@ -52,18 +54,18 @@ def d2k_tangent_plane(da, lon0=None):
     """
     REQ     = 6378.1370 # Radius of Earth to the Equator
     RPO     = 6356.7523 # Radius of Earth to the Poles 
-    XC_mean = (ds.coords['XC'].values[-1] - ds.coords['XC'].values[0]) / ds.coords['XC'].count()
-    YC_mean = (ds.coords['YC'].values[-1] - ds.coords['YC'].values[0]) / ds.coords['YC'].count()
+    XC_mean = (da.coords['XC'].values[-1] - da.coords['XC'].values[0]) / da.coords['XC'].count()
+    YC_mean = (da.coords['YC'].values[-1] - da.coords['YC'].values[0]) / da.coords['YC'].count()
     
     # Get distance between grid points according to coordinates in center of input
-    XC_mp = (ds.coords['XC'].values[-1] - ds.coords['XC'].values[0]) / 2.0
-    YC_mp = (ds.coords['YC'].values[-1] - ds.coords['YC'].values[0]) / 2.0
+    XC_mp = (da.coords['XC'].values[-1] - da.coords['XC'].values[0]) / 2.0
+    YC_mp = (da.coords['YC'].values[-1] - da.coords['YC'].values[0]) / 2.0
     
     # Basis of even spaced grid we'll produce
-    XC_even = np.zeros(ds.coords['XC'].shape)
-    XC_even[0] = ds.coords['XC'].values[0]
-    YC_even    = np.zeros(ds.coords['YC'].shape)
-    YC_even[0] = ds.coords['YC'].values[0]
+    XC_even = np.zeros(da.coords['XC'].shape)
+    XC_even[0] = da.coords['XC'].values[0]
+    YC_even    = np.zeros(da.coords['YC'].shape)
+    YC_even[0] = da.coords['YC'].values[0]
     
     for i in range(0, XC_even.size - 1): # X and Y coordinates assumed to be same size
         XC_even[i+1] = XC_even[i] + XC_mean
