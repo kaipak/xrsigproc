@@ -1,4 +1,9 @@
 # llctoolkit - Data and Signal Processing Tools for LLC4320 Datasets
+## Installation
+
+```
+pip install llctoolkit
+```
 
 ## llctoolkit
 General purpose tools for handling signal processing of LLC4320 data. 
