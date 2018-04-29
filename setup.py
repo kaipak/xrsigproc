@@ -18,6 +18,6 @@ setup(
     long_description = 'Apply convolution to signals using various kernels to filter\
                         signals into large and small scale components.',
     packages = ['xrsigproc'],
-    version = '0.1.0',
+    version = '0.1.1',
     url = 'https://github.com/kaipak/xrsigproc.git',
 )
