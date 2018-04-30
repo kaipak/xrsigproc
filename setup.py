@@ -6,7 +6,7 @@ setup(
     author_email = 'kai@kaipak.org',
     classifiers = [],
     description = 'Tools for signal processing of Xarray datasets using Python scientific libraries.',
-    download_url = 'https://github.com/kaipak/xrsigproc.git/tarball/0.1.0/',
+    download_url = 'https://github.com/kaipak/xrsigproc.git/tarball/0.1.2/',
     install_requires =[
         'astropy',
         'matplotlib',
@@ -18,6 +18,6 @@ setup(
     long_description = 'Apply convolution to signals using various kernels to filter\
                         signals into large and small scale components.',
     packages = ['xrsigproc'],
-    version = '0.1.1',
+    version = '0.1.2',
     url = 'https://github.com/kaipak/xrsigproc.git',
 )

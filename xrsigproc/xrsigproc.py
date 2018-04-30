@@ -3,6 +3,7 @@ from scipy.ndimage.filters import gaussian_filter
 from scipy.signal import convolve
 from matplotlib import pyplot as plt
 
+import matplotlib.colors as colors
 import numpy as np
 import xarray as xr
 
@@ -38,36 +39,50 @@ def _get_dims(data):
     return (ydim, xdim)
 
 
-def plot_spectrum(spectrum, ax=None, logx=False, logy=False, vmax=None, 
-                  cmap='viridis', label=None):
-    """Plot spectra with commonly used matplotlib options. Expects 
+def plot_spectrum(spectrum, ax=None, logx=False, logy=False, logc=False, 
+                            vmin=None, vmax=None, cmap='viridis', label=None):
+    """Plot 2D spectra with commonly used matplotlib options. Expects 
        spectra with x-axis as freq_x_km
     
     Parameters:
         spectrum (xarray.data): Data to plot
         logx (bool): Option to plot x-axis in logarithmic scale
-        logy (bool): Option to plot y-axis in logarithmic scale vmax (float): Maximum range of plot
+        logy (bool): Option to plot y-axis in logarithmic scale 
+        logc (bool): Colormap will be plotted in logarithmic scale
+        vmin (float): Minimum range of plot (applies only to 2D)
+        vmax (float): Maximum range of plot (applies only to 2D)
         cmap (str): Matplotlib color map to use
+        label (str): Useful label for plot
     
     
     """
+    dims = len(spectrum.dims)
+    
     if ax is None:
         fig = plt.figure(figsize=(12,8))
         ax  = fig.add_subplot(111)
-        
-    spectrum.sel(freq_x_km=slice(0,None)).plot(ax=ax, label=label, 
-                                               cmap=plt.cm.get_cmap(cmap), 
-                                               vmax=vmax)
+    
     if (logx == True):
         ax.set_xscale('log')
     if (logy == True):
         ax.set_yscale('log')
+    
+    if dims > 1:
+        if logc:
+            spectrum.sel(freq_x_km=slice(0,None)).plot(ax=ax, label=label, 
+                                                       cmap=plt.cm.get_cmap(cmap), 
+                                                       vmin=vmin, vmax=vmax, norm=colors.LogNorm())
+        else:
+            spectrum.sel(freq_x_km=slice(0,None)).plot(ax=ax, label=label, 
+                                                       cmap=plt.cm.get_cmap(cmap), 
+                                                       vmin=vmin, vmax=vmax)
+    else:
+        spectrum.sel(freq_x_km=slice(0,None)).plot(ax=ax, label=label)
 
     stack = traceback.extract_stack()
     filename, lineno, function_name, code = stack[-2]
     vars_name = re.compile(r'\((.*?)\).*$').search(code).groups()[0]
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-
+    
     return ax
 
 
