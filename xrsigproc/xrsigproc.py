@@ -1,4 +1,4 @@
-from astropy.convolution import Box2DKernel, Tophat2DKernel
+from astropy.convolution import Box2DKernel, Tophat2DKernel, TrapezoidDisk2DKernel
 from scipy.ndimage.filters import gaussian_filter
 from scipy.signal import convolve
 from matplotlib import pyplot as plt
@@ -15,7 +15,7 @@ mask_vars = {('YC', 'XC'): 'hFacC',
              ('YG', 'XC'): 'hFacS'}
 
 __all__ = ["plot_spectrum", "d2k_tangent_plane", "germano_tau", "tophat2D_smooth",
-           "boxcar2D_smooth", "gaussian_smooth"]
+           "boxcar2D_smooth", "cone2D_smooth", "gaussian_smooth"]
 
 
 def _get_dims(data):
@@ -41,7 +41,7 @@ def _get_dims(data):
 
 def plot_spectrum(spectrum, ax=None, logx=False, logy=False, logc=False, 
                             vmin=None, vmax=None, cmap='viridis', label=None):
-    """Plot 2D spectra with commonly used matplotlib options. Expects 
+    """Plot 1 or 2D spectra with commonly used matplotlib options. Expects 
        spectra with x-axis as freq_x_km
     
     Parameters:
@@ -53,7 +53,6 @@ def plot_spectrum(spectrum, ax=None, logx=False, logy=False, logc=False,
         vmax (float): Maximum range of plot (applies only to 2D)
         cmap (str): Matplotlib color map to use
         label (str): Useful label for plot
-    
     
     """
     dims = len(spectrum.dims)
@@ -151,7 +150,7 @@ def gaussian_smooth(data, scale=5, mask=False, mode='reflect'):
     sc_gaussian_nd = lambda data: gaussian_filter(data, scale, mode=mode)
 
     if mask:
-        data_masked = data.where(ds[mask_vars[dims]])
+        data_masked = data.where(data[mask_vars[dims]])
     else:
         data_masked = data.fillna(0.)
 
@@ -170,7 +169,35 @@ def boxcar2D_smooth(data, scale=90, mask=False):
     sc_convolve = lambda data: convolve(data, box2d_kernel, mode='same')
 
     if mask:
-        data_masked = data.where(ds[mask_vars[dims]])
+        data_masked = data.where(data[mask_vars[dims]])
+    else:
+        data_masked = data.fillna(0.)
+
+    return xr.apply_ufunc(sc_convolve, data_masked,
+                          vectorize=True,
+                          dask='parallelized',
+                          input_core_dims = [dims],
+                          output_core_dims = [dims],
+                          output_dtypes=[data.dtype])
+
+
+def cone2D_smooth(data, scale=90, mask=False):
+    """Create a cone shaped kernel. Uses a 2D trapezoid disk from Astropy
+       to create a one grid wide point with a slope that is inverse of 
+       desired size.
+    
+       Parameters:
+       data (Xarray dset): Set of data to convolve
+       scale (int): Radius of base of 2D cone
+    
+    """
+    dims = _get_dims(data)
+    slope = 1.0 / scale
+    cone2d_kernel = TrapezoidDisk2DKernel(scale, slope).array
+    sc_convolve = lambda data: convolve(data, cone2d_kernel, mode='same')
+
+    if mask:
+        data_masked = data.where(data[mask_vars[dims]])
     else:
         data_masked = data.fillna(0.)
 
@@ -189,7 +216,7 @@ def tophat2D_smooth(data, scale=45, mask=False):
     sc_convolve = lambda data: convolve(data, tophat2d_kernel, mode='same')
 
     if mask:
-        data_masked = data.where(ds[mask_vars[dims]])
+        data_masked = data.where(data[mask_vars[dims]])
     else:
         data_masked = data.fillna(0.)
 
