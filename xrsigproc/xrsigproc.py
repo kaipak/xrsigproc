@@ -114,14 +114,16 @@ def d2k_tangent_plane(data, lon0=None):
     Y_mp = (data.coords[Y_coord].values[-1] - data.coords[Y_coord].values[0]) / 2.0
     
     # Basis of even spaced grid we'll produce
-    X_even = np.zeros(data.coords[X_coord].shape)
+    X_even = np.zeros(data.coords[X_coord].size)
     X_even[0] = data.coords[X_coord].values[0]
-    Y_even    = np.zeros(data.coords[Y_coord].shape)
+    Y_even    = np.zeros(data.coords[Y_coord].size)
     Y_even[0] = data.coords[Y_coord].values[0]
     
-    for i in range(0, X_even.size - 1): # X and Y coordinates assumed to be same size
+    for i in range(0, X_even.size - 1): 
         X_even[i+1] = X_even[i] + X_mean
-        Y_even[i+1] = Y_even[i] + Y_mean
+
+    for j in range(0, Y_even.size - 1):
+        Y_even[j+1] = Y_even[j] + Y_mean
     
     data_copy = data.copy()
     data_copy.coords[X_coord] = np.pi * REQ * np.abs(np.cos(Y_mp)) * X_even / 180.0 
