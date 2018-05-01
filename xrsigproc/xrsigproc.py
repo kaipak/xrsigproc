@@ -81,64 +81,65 @@ def plot_spectrum(spectrum, ax=None, logx=False, logy=False, logc=False,
     stack = traceback.extract_stack()
     filename, lineno, function_name, code = stack[-2]
     vars_name = re.compile(r'\((.*?)\).*$').search(code).groups()[0]
-    
+
     return ax
 
 
-def d2k_tangent_plane(data, lon0=None): 
+def d2k_tangent_plane(data, respect_pm=True, lon0=None):
     """Convert longitudinal degree coordinates into kilometers and evenly 
-       space by average distance on a plane tangent to center point of 
+       space by average distance on a plane tangent to center point of
        grid.
-    
+
     Parameters:
-        data  (dask.dataset): Data to have XC, YC (longitude) converted to km 
+        data  (dask.dataset): Data to have XC, YC (longitude) converted to km.
+        respect_pm (bool): If true, when converting to km, measure
+                           distance from PM. If false, distances will be measured
+                           from a common origin starting at zero.
         lon_0 (float): If distance from a different longitude is required.
-    
+
     Returns:
-        data_copy (dask.dataset): Converted Array with longitudes replaced with 
-                            km from Prime Meridian.
+        data_copy (dask.dataset): Converted Array with longitudes replaced with
 
     """
     REQ     = 6378.1370 # Radius of Earth to the Equator
-    RPO     = 6356.7523 # Radius of Earth to the Poles 
-    dims  = _get_dims(data)
+    RPO     = 6356.7523 # Radius of Earth to the Poles
+    dims    = _get_dims(data)
     Y_coord = dims[0]
     X_coord = dims[1]
-    X_mean = (data.coords[X_coord].values[-1] - 
-              data.coords[X_coord].values[0]) / data.coords[X_coord].count()
-    Y_mean = (data.coords[Y_coord].values[-1] - 
-              data.coords[Y_coord].values[0]) / data.coords[Y_coord].count()
-    
+    X_mean  = np.diff(data.coords[X_coord]).mean()
+    Y_mean  = np.diff(data.coords[Y_coord]).mean()
+
     # Get distance between grid points according to coordinates in center of input
-    X_mp = (data.coords[X_coord].values[-1] - data.coords[X_coord].values[0]) / 2.0
-    Y_mp = (data.coords[Y_coord].values[-1] - data.coords[Y_coord].values[0]) / 2.0
-    
+    X_mp = (data.coords[X_coord].values[-1] + data.coords[X_coord].values[0]) / 2.0
+    Y_mp = (data.coords[Y_coord].values[-1] + data.coords[Y_coord].values[0]) / 2.0
+
     # Basis of even spaced grid we'll produce
     X_even = np.zeros(data.coords[X_coord].size)
-    X_even[0] = data.coords[X_coord].values[0]
-    Y_even    = np.zeros(data.coords[Y_coord].size)
-    Y_even[0] = data.coords[Y_coord].values[0]
-    
-    for i in range(0, X_even.size - 1): 
+    Y_even = np.zeros(data.coords[Y_coord].size)
+
+    if respect_pm:
+        X_even[0] = data.coords[X_coord].values[0]
+        Y_even[0] = data.coords[Y_coord].values[0]
+
+    for i in range(0, X_even.size - 1):
         X_even[i+1] = X_even[i] + X_mean
 
     for j in range(0, Y_even.size - 1):
         Y_even[j+1] = Y_even[j] + Y_mean
-    
+
     data_copy = data.copy()
     data_copy.coords[X_coord] = np.pi * REQ * np.abs(np.cos(Y_mp)) * X_even / 180.0 
-    data_copy.coords[Y_coord] = np.pi * RPO * Y_even / 180.0 
-    
-    # Convert to km and return a copy of dataset
-    
-    data_copy = data_copy.rename({X_coord: 'x_km'}) # Change label
+    data_copy.coords[Y_coord] = np.pi * RPO * Y_even / 180.0
+
+    # Relabel to km and return a copy of dataset
+    data_copy = data_copy.rename({X_coord: 'x_km'})
     data_copy = data_copy.rename({Y_coord: 'y_km'})
-    
+
     return data_copy
 
 
 def gaussian_smooth(data, scale=5, mask=False, mode='reflect'):
-    """Apply gaussian kernel to convolution. Uses Scipy 
+    """Apply gaussian kernel to convolution. Uses Scipy
        gaussian_filter method.
 
        Parameters:
