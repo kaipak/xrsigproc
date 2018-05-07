@@ -196,7 +196,7 @@ def cone2D_smooth(data, scale=90, mask=False):
     """
     dims = _get_dims(data)
     slope = 1.0 / scale
-    cone2d_kernel = TrapezoidDisk2DKernel(scale, slope).array
+    cone2d_kernel = TrapezoidDisk2DKernel(1, slope).array
     sc_convolve = lambda data: convolve(data, cone2d_kernel, mode='same')
 
     if mask:
