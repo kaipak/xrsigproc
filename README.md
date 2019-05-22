@@ -8,6 +8,8 @@ processing these datasets.
 
 ## Installation
 
+Install with pip:
+
 ```
 pip install xrsigproc
 ```
